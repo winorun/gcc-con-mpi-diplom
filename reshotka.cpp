@@ -4,7 +4,6 @@ POINT_ON_RESHOTKA::POINT_ON_RESHOTKA(int *argc, char** argv[],double x,double y)
 MPI_Init (argc, argv);
 MPI_Comm_rank (MPI_COMM_WORLD, &rank);
 MPI_Comm_size (MPI_COMM_WORLD, &size);
-startwtime = MPI_Wtime();
 srand(rank);
 argcClass=argc;
 argvClass=*argv;
@@ -43,8 +42,7 @@ void POINT_ON_RESHOTKA::printResult()
 		if(flag&0x1)printf("Numerical solution:\t %f\n",U);
 		if(flag&0x1)printf("Delta:\t\t\t %f\n",u(porX,porY)-U);
 		if(flag&0x1)printf("Disp:\t\t\t %f\n",Disp);
-		if(flag&0x1)printf("Time:\t\t\t %f\n",MPI_Wtime()-startwtime);
-	}
+		}
 }
 
 void POINT_ON_RESHOTKA::voidMain()
