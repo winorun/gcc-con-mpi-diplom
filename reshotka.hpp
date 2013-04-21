@@ -14,6 +14,7 @@ class POINT_ON_RESHOTKA
 	char** argvClass;int *argcClass;// argv and argc
 	int flag; // flag
 	int porColDrave; // количество проходов
+	int N;//количество для одного процесса.
 	double porX, porY;//=0.5e-00;
 
 	double startwtime, endwtime;
@@ -37,7 +38,7 @@ public:
 	void setPhi_1(double (*use) (double , double)){phi1=use;flag=flag | 0x80;};
 	void setBoundary(int (*use) (double &, double &)){boundary=use;flag=flag | 0x08;};
 	void printDebag();
-	void printResult();
+	void printResult(int);
 	int init(double,double);
 	void voidMain();
 	};
