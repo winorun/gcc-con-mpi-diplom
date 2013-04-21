@@ -31,12 +31,7 @@ void POINT_ON_RESHOTKA::printDebag()
 {
 	if(!rank){
 		printf("rank - %i \t size - %i\n",rank,size);
-		
-		if(*argcClass>=2){
-			printf("%i\t \t arg1 = %s\n",*argcClass, argvClass[1]);
-			int N = atoi(argvClass[1]);
-			if(!N)printf("number is not correctly\n");else printf("N=%i\n",N);
-		}
+		printf("N=%i\n",porColDrave);
 	}
 }
 	
@@ -44,7 +39,7 @@ void POINT_ON_RESHOTKA::printResult()
 {
 	
 	if(!rank){
-		printf("N - %i\n",size);
+		printf("N - %i\n",porColDrave/size*size);
 		if(flag&0x1)printf("Presise solution:\t %f\n",u(porX,porY));
 		if(flag&0x1)printf("Numerical solution:\t %f\n",U);
 		if(flag&0x1)printf("Delta:\t\t\t %f\n",u(porX,porY)-U);
@@ -59,7 +54,7 @@ void POINT_ON_RESHOTKA::voidMain()
 	if(!rank){// менеджер распределения
 		
 		}
-for(int i=0;i<10;i++){
+for(int i=porColDrave/size;i;i--){
 	double x=porX,y=porY;
 	double S1=0;
 		while (boundary(x,y)){
