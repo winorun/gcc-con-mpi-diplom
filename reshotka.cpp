@@ -1,4 +1,5 @@
 #include "reshotka.hpp"
+#include <unistd.h>
 
 POINT_ON_RESHOTKA::POINT_ON_RESHOTKA(int *argc, char** argv[],double x,double y){
 MPI_Init (argc, argv);
@@ -9,6 +10,10 @@ argcClass=argc;
 argvClass=*argv;
 porX=x;
 porY=y;
+for(int rez=getopt(*argc,*argv,"n:");rez!=-1;rez=getopt(*argc,*argv,"abc:d::"))
+	switch (rez){
+		case 'n': porColDrave = atoi(optarg);if(!porColDrave)porColDrave=1000;break;
+	};
 flag=1;
 }
 
@@ -26,6 +31,7 @@ void POINT_ON_RESHOTKA::printDebag()
 {
 	if(!rank){
 		printf("rank - %i \t size - %i\n",rank,size);
+		
 		if(*argcClass>=2){
 			printf("%i\t \t arg1 = %s\n",*argcClass, argvClass[1]);
 			int N = atoi(argvClass[1]);
@@ -36,6 +42,7 @@ void POINT_ON_RESHOTKA::printDebag()
 	
 void POINT_ON_RESHOTKA::printResult()
 {
+	
 	if(!rank){
 		printf("N - %i\n",size);
 		if(flag&0x1)printf("Presise solution:\t %f\n",u(porX,porY));
@@ -47,8 +54,14 @@ void POINT_ON_RESHOTKA::printResult()
 
 void POINT_ON_RESHOTKA::voidMain()
 {
+	double S=0;
+	
+	if(!rank){// менеджер распределения
+		
+		}
+for(int i=0;i<10;i++){
 	double x=porX,y=porY;
-	double S=0,S1=0;
+	double S1=0;
 		while (boundary(x,y)){
 		   double d=diam(x,y);
 		   
@@ -78,7 +91,8 @@ void POINT_ON_RESHOTKA::voidMain()
 	   S+=(S1/4)*phi1(x,y)+phi0(x,y);
 //		printf("%i) \t %f\n",rank,S);
 //	   U=S/size;
-	   Disp=S*S;
+	   Disp+=S*S;
+   }
 		double inbuf[3],outbuf[3]={S,Disp,0};
 		MPI_Reduce(outbuf, inbuf, 2, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		if(!rank){

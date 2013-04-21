@@ -10,10 +10,10 @@
 
 class POINT_ON_RESHOTKA
 {
-	int rank,size;
-	char** argvClass;
-	int *argcClass;
-	int flag;
+	int rank,size;// mpi 
+	char** argvClass;int *argcClass;// argv and argc
+	int flag; // flag
+	int porColDrave; // количество проходов
 	double porX, porY;//=0.5e-00;
 
 	double startwtime, endwtime;
