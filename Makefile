@@ -1,4 +1,4 @@
-ifndef ComSpec
+ifneq (,$(findstring WINDOWS,$(PATH)))
 	LIB = -L"C:\Program Files\MPICH2\lib" -lmpi
 	INCL = -I"C:\Program Files\MPICH2\include"
 	TYPE = .exe
