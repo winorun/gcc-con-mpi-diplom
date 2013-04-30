@@ -1,7 +1,7 @@
 #ifndef RESHOTKA
 #define RESHOTKA
 
-#include <mpi/mpi.h>
+#include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmath>  
