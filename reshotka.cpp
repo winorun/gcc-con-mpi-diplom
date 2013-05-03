@@ -51,19 +51,19 @@ void POINT_ON_RESHOTKA::printResult(int N){//времянка
 		}else{
 			if(flag&0x200)printf("PS\t\t NS\t\t Delta\t\t Disp\n");
 			printf("%f\t %f\t %f\t %f\n",u(porX,porY),U,u(porX,porY)-U,Disp);
+			printf("porColDrowAll %i \n",N);
 			};
 }}
 
 void POINT_ON_RESHOTKA::voidMain()
 {
-	double S=0;
 	N= porColDrave/(size-1);
 	if(!rank){// менеджер распределения
 		N = porColDrave%(size-1);
 		}
 for(int i=N;i;i--){
 	double x=porX,y=porY;
-	double S1=0;
+	double S1=0,S=0;
 		while (boundary(x,y)){
 		   double d=diam(x,y);
 		   
@@ -94,22 +94,17 @@ for(int i=N;i;i--){
 //		if(!rank) printf("%i \t %f\n",i,S);
 //		if(!rank) printf("%i \t %f\n",N-i+1,S/(N-i+1));
 		
-//	   U=S/size;
+	   U+=S/porColDrave;
 	   Disp+=(S*S)/porColDrave;
-		//~ if(!rank) printf("%i \t %f\n",i,Disp);
-		//~ if(!rank) printf("%i \t %f\n\n",N-i+1,Disp/(N-i+1));
-	   //незабыть разделить на количество узлов
+
    }
-		double inbuf[4],outbuf[4]={S/porColDrave,Disp,0};
+		double inbuf[4],outbuf[4]={U,Disp,0};
 		MPI_Reduce(outbuf, inbuf, 2, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-		int porColDraveAll;
-		MPI_Reduce(&N, &porColDraveAll, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 		if(!rank){
 			U=inbuf[0];
 			Disp=inbuf[1];
-			//N=inbuf[2];
 			Disp=sqrt(fabs(Disp-U*U)/porColDrave);
-			printResult(porColDraveAll);
+			printResult(porColDrave);
 		}
 	}
 
