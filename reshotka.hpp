@@ -11,13 +11,12 @@
 class POINT_ON_RESHOTKA
 {
 	int rank,size;// mpi 
-	char** argvClass;int *argcClass;// argv and argc
 	int flag; // flag
 	int porColDrave; // количество проходов
 	int N;//количество для одного процесса.
+	int N_2; //
 	double porX, porY;//=0.5e-00;
-
-	double startwtime, endwtime;
+	double starttime, endtime;
 
 	static const double PI=3.141592e-00;
 	
@@ -38,7 +37,7 @@ public:
 	void setPhi_1(double (*use) (double , double)){phi1=use;flag=flag | 0x80;};
 	void setBoundary(int (*use) (double &, double &)){boundary=use;flag=flag | 0x08;};
 	void printDebag();
-	void printResult(int);
+	void printResult();
 	int init(double,double);
 	void voidMain();
 	};
