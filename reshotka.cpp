@@ -29,7 +29,7 @@ int POINT_ON_RESHOTKA::init(double x,double y)
 	return 1;
 	}
 void POINT_ON_RESHOTKA::printDebag(){
-		printf("Выполнение %i на  %i заняло %f секунд при %i среднем\n",rank, N,endtime-starttime,N_2/N);
+		printf("Выполнение %i на  %i заняло %f секунд при %i среднем\n",rank, N,endtime-starttime,N_2);
 	}
 
 	
@@ -49,7 +49,7 @@ void POINT_ON_RESHOTKA::printResult(){//времянка
 
 void POINT_ON_RESHOTKA::voidMain(){
   starttime = MPI_Wtime();
-	
+	N_2 = 0;
 	N= porColDrave/(size-1);
 	if(!rank){// менеджер распределения
 		N = porColDrave%(size-1);
@@ -57,7 +57,7 @@ void POINT_ON_RESHOTKA::voidMain(){
 for(int i=N;i;i--){
 	double x=porX,y=porY;
 	double S1=0,S=0;
-	N_2 = 0;
+	
 		while (boundary(x,y)){
 			N_2++;
 		   double d=diam(x,y);
@@ -89,9 +89,10 @@ for(int i=N;i;i--){
 	   Disp+=(S*S)/porColDrave;
 
    }
+		endtime = MPI_Wtime();
 		double inbuf[4],outbuf[4]={U,Disp,0};
 		MPI_Reduce(outbuf, inbuf, 2, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-		endtime = MPI_Wtime();
+		
 		if(!rank){
 			U=inbuf[0];
 			Disp=inbuf[1];
