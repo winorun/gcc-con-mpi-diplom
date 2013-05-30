@@ -87,7 +87,6 @@ for(int i=N;i;i--){
 	   S+=(S1/4)*phi1(x,y)+phi0(x,y);
 	   U+=S/porColDrave;
 	   Disp+=(S*S)/porColDrave;
-
    }
 		endtime = MPI_Wtime();
 		double inbuf[4],outbuf[4]={U,Disp,0};
