@@ -32,7 +32,7 @@ int main (int argc, char* argv[])
 	porFist.setPhi_0(phi_0);
 	porFist.setPhi_1(phi_1);
 	porFist.setBoundary(boundary);
-	porFist.staticSphere();
-	porFist.printDebag();
+	porFist.mainRun();
+	//porFist.printDebag();
     return 0;
 }

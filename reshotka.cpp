@@ -29,11 +29,11 @@ int POINT_ON_RESHOTKA::init(double x,double y)
 	return 1;
 	}
 void POINT_ON_RESHOTKA::printDebag(){
-		printf("Выполнение %i на  %i заняло %f секунд при %i среднем длене %i общий путь\n",rank, N,endtime-starttime,N_2/N,N_2);
+		printf("Выполнение %i на  %i заняло %f секунд при %i среднем длене %i общий путь\n",rank, N,timeRun,N_2/N,N_2);
 	}
 
 	
-void POINT_ON_RESHOTKA::printResult(){//времянка
+void POINT_ON_RESHOTKA::printResult(){//времянка убрать принт нах
 	if(!rank){
 		if(flag&0x100){
 			printf("N - %i\n",N);
@@ -46,7 +46,8 @@ void POINT_ON_RESHOTKA::printResult(){//времянка
 			printf("%f\t %f\t %f\t %f\n",u(porX,porY),U,u(porX,porY)-U,Disp);
 			};
 }}
-double POINT_ON_RESHOTKA::voidSphere(){
+
+double POINT_ON_RESHOTKA::voidSphere(int &N){
 	double startTime = MPI_Wtime();
 	N_2 = 0;
 for(int i=N;i;i--){
@@ -57,7 +58,7 @@ for(int i=N;i;i--){
 			N_2++;
 		   double d=diam(x,y);
 		   
-		   double alpha= DRAND;// шаг ?
+		   double alpha= DRAND;
 		   double omega1=cos(2*PI*alpha); 
 		   double omega2=sin(2*PI*alpha);
 		   
@@ -83,27 +84,71 @@ for(int i=N;i;i--){
 	   U+=S/porColDrave;
 	   Disp+=(S*S)/porColDrave;
    }
-		return MPI_Wtime()-startTime;
+		return MPI_Wtime()-startTime/N_2;
+}
+void POINT_ON_RESHOTKA::mainRun(){
+	if(flag&DINAMIC_ALG)dinamicSphere();else staticSphere();
+	}
+void POINT_ON_RESHOTKA::dinamicSphere(){
+	timeRun = MPI_Wtime();	
+	double minSpeedIndex=-1;
+	double speedIndex;
+	double kIndex=1;
+	double timeAndCol[2];
+	int modPril=size;
+	if(rank){
+		int N=porColDrave/(2*modPril);
+		porColDrave-=N*modPril;
+		while(N){
+			//~ printf("%i\t start %i \n",rank,N);
+			speedIndex=voidSphere(N);
+			MPI_Send(&speedIndex, 1,MPI_DOUBLE,0, 0,MPI_COMM_WORLD);
+			MPI_Recv(&N, 1,MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+			//~ printf("%i\t sent %i \n",rank,N);
+		};
+	}
+		else {
+			do{
+				int N=0;
+				MPI_Status status;
+				MPI_Recv(&speedIndex, 1,MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD,&status);
+				if(minSpeedIndex==-1)minSpeedIndex=speedIndex;
+				if(minSpeedIndex>speedIndex)minSpeedIndex=speedIndex;
+				kIndex=minSpeedIndex/speedIndex;
+				if(porColDrave<50){modPril--;N=porColDrave;porColDrave=0;}
+				if(porColDrave>=50){
+					N=(porColDrave)/(2*modPril);// verni kIndex
+					if(!N)N=porColDrave;
+					porColDrave-=N;
+					}
+				MPI_Send(&N, 1,MPI_INT,status.MPI_SOURCE, 0,MPI_COMM_WORLD);
+			}while(modPril);
+		}
+	double inbuf[2],outbuf[2]={U,Disp};// <- говно. дублирование.
+	MPI_Reduce(outbuf, inbuf, 2, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	timeRun=MPI_Wtime()-timeRun;
+	if(!rank){
+		U=inbuf[0];
+		Disp=inbuf[1];
+		Disp=sqrt(fabs(Disp-U*U)/porColDrave);
+		printResult();
+	}	
 }
 
 void POINT_ON_RESHOTKA::staticSphere(){
-	starttime = MPI_Wtime();
-	N= porColDrave/size+1;
-	if(!rank){// менеджер распределения
-		N = porColDrave/size-size;
-		}
-		voidSphere();
-		
-		double inbuf[2],outbuf[2]={U,Disp};
-		MPI_Reduce(outbuf, inbuf, 2, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-		endtime=MPI_Wtime();
-		if(!rank){
-			U=inbuf[0];
-			Disp=inbuf[1];
-			Disp=sqrt(fabs(Disp-U*U)/porColDrave);
-			printResult();
-		}	
-	}
+	timeRun = MPI_Wtime();
+	if(!rank)N = porColDrave/size-size;else N= porColDrave/size+1;
+	voidSphere(N);
+	double inbuf[2],outbuf[2]={U,Disp}; // <- говно, дублирование.
+	MPI_Reduce(outbuf, inbuf, 2, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	timeRun=MPI_Wtime()-timeRun;
+	if(!rank){
+		U=inbuf[0];
+		Disp=inbuf[1];
+		Disp=sqrt(fabs(Disp-U*U)/porColDrave);
+		printResult();
+	}	
+}
 
  double POINT_ON_RESHOTKA::diam(double x, double y){
 	 if (x> fabs(1-x)) x= fabs(1-x);// fabs - абсолютное значение для аргумента с плавоющей точкой
