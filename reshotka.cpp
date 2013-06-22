@@ -1,6 +1,18 @@
 #include "reshotka.hpp"
 #include <unistd.h>
 
+	void POINT_ON_RESHOTKA::setU(double (*use) (double , double))
+	{u=use;flag=flag | 0x10;};
+	void POINT_ON_RESHOTKA::setG(double (*use) (double , double))
+	{g=use;flag=flag | 0x20;};
+	void POINT_ON_RESHOTKA::setPhi_0(double (*use) (double , double))
+	{phi0=use;flag=flag | 0x40;};
+	void POINT_ON_RESHOTKA::setPhi_1(double (*use) (double , double))
+	{phi1=use;flag=flag | 0x80;};
+	void POINT_ON_RESHOTKA::setBoundary(int (*use) (double &, double &))
+	{boundary=use;flag=flag | 0x08;};
+
+
 POINT_ON_RESHOTKA::POINT_ON_RESHOTKA(int *argc, char** argv[],double x,double y){
 MPI_Init (argc, argv);
 MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -9,11 +21,13 @@ srand(rank);
 porX=x;
 porY=y;
 flag=0x1;
-for(int rez=getopt(*argc,*argv,"n:fl");rez!=-1;rez=getopt(*argc,*argv,"n:fl"))
+for(int rez=getopt(*argc,*argv,"n:flc");rez!=-1;rez=getopt(*argc,*argv,"n:flc"))
 	switch (rez){
 		case 'n': porColDrave = atoi(optarg);if(!porColDrave)porColDrave=1000;break;
 		case 'f': flag=flag | 0x100;break;
 		case 'l':flag=flag | 0x200;break;
+		case 'c':flag=flag | 0x10000000;break;
+		
 	};
 
 }
@@ -37,7 +51,7 @@ void POINT_ON_RESHOTKA::printResult(){//времянка убрать принт
 	if(!rank){
 		if(flag&0x100){
 			printf("N - %i\n",N);
-			if(flag&0x1)printf("Presise solution:\t %f\n",u(porX,porY));
+			if((flag&0x1)&&(flag&0x10000000))printf("Presise solution:\t %f\n",u(porX,porY));
 			if(flag&0x1)printf("Numerical solution:\t %f\n",U);
 			if(flag&0x1)printf("Delta:\t\t\t %f\n",u(porX,porY)-U);
 			if(flag&0x1)printf("Disp:\t\t\t %f\n",Disp);
