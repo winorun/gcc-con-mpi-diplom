@@ -2,12 +2,13 @@
 #define RESHOTKA
 
 #include <mpi.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <cmath>  
 #define DRAND double (rand())/ double(RAND_MAX)
+
 #define DINAMIC_ALG 0x01000000
 #define RESHOTKA_METOS 0x00100000
+
 class POINT_ON_RESHOTKA{
 	int rank,size;// mpi 
 	int flag; // flag
@@ -15,7 +16,7 @@ class POINT_ON_RESHOTKA{
 	int N;//количество траекторий для одного процесса.
 	int N_2; //количество точек для одного процесса
 	double porX, porY;//=0.5e-00;
-	double timeRun;
+	double timeRun; // время начала расчета
 
 	static const double PI=3.141592e-00;
 	
@@ -39,8 +40,8 @@ public:
 	void setPhi_0(double (*use) (double , double));
 	void setPhi_1(double (*use) (double , double));
 	void setBoundary(int (*use) (double &, double &));
-	void printDebag();
-	void printResult();
+	double ReturnSum();
+	double ReturnDisp();
 	int init(double,double);
 	void mainRun();
 	void setFlag(int fl){flag=flag | fl;};};

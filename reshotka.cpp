@@ -21,15 +21,6 @@ srand(rank);
 porX=x;
 porY=y;
 flag=0x1;
-for(int rez=getopt(*argc,*argv,"n:flc");rez!=-1;rez=getopt(*argc,*argv,"n:flc"))
-	switch (rez){
-		case 'n': porColDrave = atoi(optarg);if(!porColDrave)porColDrave=1000;break;
-		case 'f': flag=flag | 0x100;break;
-		case 'l':flag=flag | 0x200;break;
-		case 'c':flag=flag | 0x10000000;break;
-		
-	};
-
 }
 
 POINT_ON_RESHOTKA::~POINT_ON_RESHOTKA(){
@@ -42,24 +33,6 @@ int POINT_ON_RESHOTKA::init(double x,double y)
 	flag=1;
 	return 1;
 	}
-void POINT_ON_RESHOTKA::printDebag(){
-		printf("Выполнение %i на  %i заняло %f секунд при %i среднем длене %i общий путь\n",rank, N,timeRun,N_2/N,N_2);
-	}
-
-	
-void POINT_ON_RESHOTKA::printResult(){//времянка убрать принт нах
-	if(!rank){
-		if(flag&0x100){
-			printf("N - %i\n",N);
-			if((flag&0x1)&&(flag&0x10000000))printf("Presise solution:\t %f\n",u(porX,porY));
-			if(flag&0x1)printf("Numerical solution:\t %f\n",U);
-			if(flag&0x1)printf("Delta:\t\t\t %f\n",u(porX,porY)-U);
-			if(flag&0x1)printf("Disp:\t\t\t %f\n",Disp);
-		}else{
-			if(flag&0x200)printf("PS\t\t NS\t\t Delta\t\t Disp\n");
-			printf("%f\t %f\t %f\t %f\n",u(porX,porY),U,u(porX,porY)-U,Disp);
-			};
-}}
 
 double POINT_ON_RESHOTKA::voidSphere(int &N){
 	double startTime = MPI_Wtime();
@@ -114,11 +87,9 @@ void POINT_ON_RESHOTKA::dinamicSphere(){
 		int N=porColDrave/(2*modPril);
 		porColDrave-=N*modPril;
 		while(N){
-			//~ printf("%i\t start %i \n",rank,N);
 			speedIndex=voidSphere(N);
 			MPI_Send(&speedIndex, 1,MPI_DOUBLE,0, 0,MPI_COMM_WORLD);
 			MPI_Recv(&N, 1,MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-			//~ printf("%i\t sent %i \n",rank,N);
 		};
 	}
 		else {
@@ -145,7 +116,6 @@ void POINT_ON_RESHOTKA::dinamicSphere(){
 		U=inbuf[0];
 		Disp=inbuf[1];
 		Disp=sqrt(fabs(Disp-U*U)/porColDrave);
-		printResult();
 	}	
 }
 
@@ -160,7 +130,6 @@ void POINT_ON_RESHOTKA::staticSphere(){
 		U=inbuf[0];
 		Disp=inbuf[1];
 		Disp=sqrt(fabs(Disp-U*U)/porColDrave);
-		printResult();
 	}	
 }
 
