@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cmath> 
+#include <unistd.h>
+#include <stdlib.h>
 #include "reshotka.hpp"
 using namespace std;
 
@@ -24,27 +26,26 @@ const double epsilon=0.001e-00;
 	 if (y> (1-epsilon)){y=1.0; return 0;};
 	 return 1; // return true if point on boundary or mod y,x on 1/0
  }
- 
- //~ void printResult(){//времянка убрать принт нах
-	//~ if(!rank){
-		//~ if(flag&0x100){
-			//~ printf("N - %i\n",N);
-			//~ if((flag&0x1)&&(flag&0x10000000))printf("Presise solution:\t %f\n",u(porX,porY));
-			//~ if(flag&0x1)printf("Numerical solution:\t %f\n",U);
-			//~ if(flag&0x1)printf("Delta:\t\t\t %f\n",u(porX,porY)-U);
-			//~ if(flag&0x1)printf("Disp:\t\t\t %f\n",Disp);
-		//~ }else{
-			//~ if(flag&0x200)printf("PS\t\t NS\t\t Delta\t\t Disp\n");
-			//~ printf("%f\t %f\t %f\t %f\n",u(porX,porY),U,u(porX,porY)-U,Disp);
-			//~ };
-//~ }}
- 
+  
 int main (int argc, char* argv[])
 {
+	int N;
+	for(int rez=getopt(argc,argv,"n:");rez!=-1;rez=getopt(argc,argv,"n:"))
+	switch (rez){
+		case 'n':
+			N = atoi(optarg);
+			if(!N)N=1000;
+			break;
+	};
 	
 	if(libInit(&argc,&argv)&LIB_ERROR)return 1;
 	setFunctions(u,g,phi_0,phi_1);
 	setBoundary(boundary);
+	Flag flag;
+	Rezult rez = libRunComputing(Point(0.5,0.5),flag,N);
+	if(!rez.iStatus){
+	cout << rez.dDisp << "\n";
+	cout << rez.dRezSum << "\n";}
 	libClose();
     return 0;
 }

@@ -1,8 +1,7 @@
 #include "reshotka.hpp"
-#include <unistd.h>
 #include <mpi.h>
-#include <stdlib.h>
 #include <cmath>  
+#include <stdlib.h>
 
 #define DRAND double (rand())/ double(RAND_MAX)
 
@@ -31,7 +30,10 @@ Point::Point(double x,double y){
 	 if (y>fabs(1-y)) y=fabs(1-y); 
 	 return (x>=y)?y:x;
 }
-	  
+Rezult rezSphere(int iN,Point Sp){
+	
+}
+
 //public funtion
 
 Flag libClose(){
@@ -70,50 +72,6 @@ Flag setBoundary(int (*use) (double &, double &)){
 	libGlobalFlag=Flag(libGlobalFlag|BOUNDARY_EXISTS);
 	return libGlobalFlag;
 }
-
-//~ 
-//~ double Point_ON_RESHOTKA::voidSphere(int &N){
-	//~ double startTime = MPI_Wtime();
-	//~ N_2 = 0;
-//~ for(int i=N;i;i--){
-	//~ double x=porX,y=porY;
-	//~ double S1=0,S=0;
-	//~ 
-		//~ while (boundary(x,y)){
-			//~ N_2++;
-		   //~ double d=diam(x,y);
-		   //~ 
-		   //~ double alpha= DRAND;
-		   //~ double omega1=cos(2*PI*alpha); 
-		   //~ double omega2=sin(2*PI*alpha);
-		   //~ 
-		   //~ alpha= DRAND;
-		   //~ double om1=cos(2*PI*alpha);
-		   //~ double om2=sin(2*PI*alpha);
-		   //~ 
-		   //~ double alpha1=0;
-		   //~ double alpha2=0;
-		   //~ do{
-			   //~ alpha1=DRAND;
-			   //~ alpha2=DRAND;
-			   //~ alpha2=4*alpha2/exp(1);
-		   //~ }while(alpha2>(-4*alpha1*log(alpha1)));
-		   //~ 
-			//~ double nu=alpha1*d;
-			//~ S+=(S1-((d*d-nu*nu-nu*nu*log(d/nu))/log(d/nu)))*d*d*g(x+nu*om1,y+nu*om2)/16;
-			//~ S1-=d*d;
-			//~ x=x+omega1*d;
-			//~ y=y+omega2*d;
-	   //~ };
-	   //~ S+=(S1/4)*phi[1](x,y)+phi[0](x,y);
-	   //~ U+=S/porColDrave;
-	   //~ Disp+=(S*S)/porColDrave;
-   //~ }
-		//~ return MPI_Wtime()-startTime/N_2;
-//~ }
-//~ void Point_ON_RESHOTKA::mainRun(){
-	//~ if(flag&DINAMIC_ALG)dinamicSphere();else staticSphere();
-	//~ }
 //~ void Point_ON_RESHOTKA::dinamicSphere(){
 	//~ timeRun = MPI_Wtime();	
 	//~ double minSpeedIndex=-1;
@@ -158,22 +116,51 @@ Flag setBoundary(int (*use) (double &, double &)){
 //~ }
 //~ 
 
-Rezult libRunComputing(Point startPoint,Flag & flag,int iN){
-	Rezult rez={0,0,0};
+Rezult libRunComputing(Point startPoint,Flag & flag,int iFullN){
+	int N;
+	N= iFullN/mpiSize; 
+	Rezult rez;//=rezSphere(N,startPoint);
+	
+	for(int i=N;i;i--){
+	double S1=0,S=0;
+		while (funBoundary(startPoint.dX,startPoint.dY)){
+		   double d=diam(startPoint.dX,startPoint.dY);
+		   
+		   double alpha= DRAND;
+		   double omega1=cos(2*PI*alpha); 
+		   double omega2=sin(2*PI*alpha);
+		   
+		   alpha= DRAND;
+		   double om1=cos(2*PI*alpha);
+		   double om2=sin(2*PI*alpha);
+		   
+		   double alpha1=0;
+		   double alpha2=0;
+		   do{
+			   alpha1=DRAND;
+			   alpha2=DRAND;
+			   alpha2=4*alpha2/exp(1);
+		   }while(alpha2>(-4*alpha1*log(alpha1)));
+		   
+			double nu=alpha1*d;
+			S+=(S1-((d*d-nu*nu-nu*nu*log(d/nu))/log(d/nu)))*d*d*funG(startPoint.dX+nu*om1,startPoint.dY+nu*om2)/16;
+			S1-=d*d;
+			startPoint.dX=startPoint.dX+omega1*d;
+			startPoint.dY=startPoint.dY+omega2*d;
+	   };
+	   S+=(S1/4)*funPhi[1](startPoint.dX,startPoint.dY)+funPhi[0](startPoint.dX,startPoint.dY);
+	   rez.dRezSum+=S/iFullN;
+	   rez.dDisp+=(S*S)/iFullN;
+   }
+	
+	double inbuf[2],outbuf[2]={rez.dRezSum,rez.dDisp}; 
+	MPI_Reduce(outbuf, inbuf, 2, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	if(!mpiRank){
+		rez.dRezSum=inbuf[0];
+		rez.dDisp=inbuf[1];
+		rez.dDisp=sqrt(fabs(rez.dDisp-rez.dRezSum*rez.dRezSum)/iFullN);
+		rez.iStatus=0;
+	}else rez.iStatus=1;
 	return rez;
 	}
-
-//~ void Point_ON_RESHOTKA::staticSphere(){
-	//~ timeRun = MPI_Wtime();
-	//~ if(!rank)N = porColDrave/size-size;else N= porColDrave/size+1;
-	//~ voidSphere(N);
-	//~ double inbuf[2],outbuf[2]={U,Disp}; // <- говно, дублирование.
-	//~ MPI_Reduce(outbuf, inbuf, 2, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	//~ timeRun=MPI_Wtime()-timeRun;
-	//~ if(!rank){
-		//~ U=inbuf[0];
-		//~ Disp=inbuf[1];
-		//~ Disp=sqrt(fabs(Disp-U*U)/porColDrave);
-	//~ }	
-//~ }
   
