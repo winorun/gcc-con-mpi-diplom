@@ -122,9 +122,10 @@ Rezult libRunComputing(Point startPoint,Flag & flag,int iFullN){
 	Rezult rez;//=rezSphere(N,startPoint);
 	
 	for(int i=N;i;i--){
+	double x=startPoint.dX,y=startPoint.dY;
 	double S1=0,S=0;
-		while (funBoundary(startPoint.dX,startPoint.dY)){
-		   double d=diam(startPoint.dX,startPoint.dY);
+		while (funBoundary(x,y)){
+		   double d=diam(x,y);
 		   
 		   double alpha= DRAND;
 		   double omega1=cos(2*PI*alpha); 
@@ -143,12 +144,12 @@ Rezult libRunComputing(Point startPoint,Flag & flag,int iFullN){
 		   }while(alpha2>(-4*alpha1*log(alpha1)));
 		   
 			double nu=alpha1*d;
-			S+=(S1-((d*d-nu*nu-nu*nu*log(d/nu))/log(d/nu)))*d*d*funG(startPoint.dX+nu*om1,startPoint.dY+nu*om2)/16;
+			S+=(S1-((d*d-nu*nu-nu*nu*log(d/nu))/log(d/nu)))*d*d*funG(x+nu*om1,y+nu*om2)/16;
 			S1-=d*d;
-			startPoint.dX=startPoint.dX+omega1*d;
-			startPoint.dY=startPoint.dY+omega2*d;
+			x=x+omega1*d;
+			y=y+omega2*d;
 	   };
-	   S+=(S1/4)*funPhi[1](startPoint.dX,startPoint.dY)+funPhi[0](startPoint.dX,startPoint.dY);
+	   S+=(S1/4)*funPhi[1](x,y)+funPhi[0](x,y);
 	   rez.dRezSum+=S/iFullN;
 	   rez.dDisp+=(S*S)/iFullN;
    }
