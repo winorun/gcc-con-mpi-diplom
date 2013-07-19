@@ -1,5 +1,7 @@
+#include <iostream>
+#include <cmath> 
 #include "reshotka.hpp"
-#include <stdio.h>
+using namespace std;
 
 const double epsilon=0.001e-00;
 
@@ -39,24 +41,10 @@ const double epsilon=0.001e-00;
  
 int main (int argc, char* argv[])
 {
-	POINT_ON_RESHOTKA porFist(&argc, &argv,0.5,0.5);
 	
-	//~ for(int rez=getopt(*argc,*argv,"n:flc");rez!=-1;rez=getopt(*argc,*argv,"n:flc"))
-	//~ switch (rez){
-		//~ case 'n': porColDrave = atoi(optarg);if(!porColDrave)porColDrave=1000;break;
-		//~ case 'f': flag=flag | 0x100;break;
-		//~ case 'l':flag=flag | 0x200;break;
-		//~ case 'c':flag=flag | 0x10000000;break;
-		//~ 
-	//~ };
-	
-	porFist.setU(u);
-	porFist.setG(g);
-	porFist.setPhi_0(phi_0);
-	porFist.setPhi_1(phi_1);
-	porFist.setBoundary(boundary);
-	//porFist.setFlag(DINAMIC_ALG);
-	porFist.mainRun();
-	//porFist.printDebag();
+	if(libInit(&argc,&argv)&LIB_ERROR)return 1;
+	setFunctions(u,g,phi_0,phi_1);
+	setBoundary(boundary);
+	libClose();
     return 0;
 }

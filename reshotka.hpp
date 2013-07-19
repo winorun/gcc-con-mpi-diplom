@@ -1,48 +1,45 @@
 #ifndef RESHOTKA
 #define RESHOTKA
 
-#include <mpi.h>
-#include <stdlib.h>
-#include <cmath>  
-#define DRAND double (rand())/ double(RAND_MAX)
+// === Принятый способ именования ===		\\
+// Имена функций и переменых -- с маленькой\\
+// приставкой -- тип\\
+// Типы -- с большой \\
+// Макросы и константы -- заглавными	\\
+// 					=== *** ===								\\
 
-#define DINAMIC_ALG 0x01000000
-#define RESHOTKA_METOS 0x00100000
+enum Flag{
+	NOT_Flag = 0,
+	DINAMIC_ALG = 0x40,
+	SPHERE_METOS = 0x80,
+	G_EXISTS=0x04,
+	U_EXISTS=0x08,
+	BOUNDARY_EXISTS=0x10,
+	PHI_FULL_EXISTS=0x20,
+	LIB_INIT=1,
+	LIB_MPI_CLOSE=2,
+	LIB_ERROR=0x100
+};
 
-class POINT_ON_RESHOTKA{
-	int rank,size;// mpi 
-	int flag; // flag
-	int porColDrave; // количество траекторий
-	int N;//количество траекторий для одного процесса.
-	int N_2; //количество точек для одного процесса
-	double porX, porY;//=0.5e-00;
-	double timeRun; // время начала расчета
+struct Rezult{
+	double dRezSum;
+	double dDisp;
+	int iStatus;
+};
 
-	static const double PI=3.141592e-00;
-	
-	double (*u) (double , double);
-	double (*g) (double , double);
-	double (*phi0) (double , double);
-	double (*phi1) (double , double);
-	int (*boundary) (double &, double &);
-	double U,Disp;
-	
-	double voidSphere(int &N);
-	double diam(double , double );
-	void staticSphere();
-	void dinamicSphere();
-public:
-	POINT_ON_RESHOTKA(int *, char***,double,double);
-	~POINT_ON_RESHOTKA();
-	
-	void setU(double (*use) (double , double));
-	void setG(double (*use) (double , double));
-	void setPhi_0(double (*use) (double , double));
-	void setPhi_1(double (*use) (double , double));
-	void setBoundary(int (*use) (double &, double &));
-	double ReturnSum();
-	double ReturnDisp();
-	int init(double,double);
-	void mainRun();
-	void setFlag(int fl){flag=flag | fl;};};
+struct Point{
+	double dX,dY;
+	Point();
+	Point(double,double);
+};
+
+Flag libInit(int *, char***);
+Flag libClose();
+
+typedef double (*FunWith2Par) (double , double);
+Flag setFunctions(FunWith2Par U,FunWith2Par G,FunWith2Par Phi_0,FunWith2Par Phi_1);
+Flag setBoundary(int (*use) (double &, double &));
+
+Rezult libRunComputing(Point startPoint,Flag & flag,int iN);
+Rezult libRunComputing(Point startPoint,Flag & flag,double dDispersion);
 #endif
